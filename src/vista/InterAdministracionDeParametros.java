@@ -4,11 +4,18 @@
  */
 package vista;
 
-import controlador.Ctrl_Proveedor;
-import java.awt.Color;
+import conexion.Conexion;
+import controlador.Ctrl_Cliente;
+import controlador.Ctrl_Config;
+
 import java.awt.Dimension;
 import javax.swing.JOptionPane;
-import modelo.Proveedor;
+import modelo.Config;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import modelo.Cliente;
 
 /**
  *
@@ -16,13 +23,73 @@ import modelo.Proveedor;
  */
 public class InterAdministracionDeParametros extends javax.swing.JInternalFrame {
 
+    private int id;
+
     /**
      * Creates new form InterUsuario
      */
     public InterAdministracionDeParametros() {
         initComponents();
-        this.setSize(new Dimension(400, 350));
+        this.setSize(new Dimension(500, 440));
         this.setTitle("Nuevo Proveedor");
+        cargarDatosConfig();
+    }
+
+    private void cargarDatosConfig() {
+        int id = 1;
+        EnviarDatosConfig(id);
+    }
+
+    private void EnviarDatosConfig(int id) {
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "SELECT * FROM tb_config WHERE id = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, id);
+            ResultSet rs = pst.executeQuery();
+
+            if (rs.next()) {
+                txt_idConf.setText(rs.getString("id"));
+                txt_rucempresa.setText(rs.getString("ruc"));
+                txt_nombreempresa.setText(rs.getString("nombre"));
+                txt_telefonoempresa.setText(rs.getString("telefono"));
+                txt_direccionempresa.setText(rs.getString("direccion"));
+                txt_emailempresa.setText(rs.getString("email"));
+                txt_ganancia.setText(rs.getString("ganancia"));
+                txt_iva.setText(rs.getString("iva"));
+            }
+
+            con.close();
+        } catch (SQLException e) {
+            System.out.println("Error al seleccionar cliente: " + e);
+        }
+    }
+
+    private void guardarDatosConfig() {
+        try {
+            Connection con = Conexion.conectar();
+            String sql = "UPDATE tb_config SET ruc = ?, nombre = ?, telefono = ?, direccion = ?, email = ?, ganancia = ?, iva = ? WHERE id = ?";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, txt_rucempresa.getText());
+            pst.setString(2, txt_nombreempresa.getText());
+            pst.setString(3, txt_telefonoempresa.getText());
+            pst.setString(4, txt_direccionempresa.getText());
+            pst.setString(5, txt_emailempresa.getText());
+            pst.setInt(6, Integer.parseInt(txt_ganancia.getText()));
+            pst.setInt(7, Integer.parseInt(txt_iva.getText()));
+            pst.setInt(8, Integer.parseInt(txt_idConf.getText())); // Aquí asumo que txt_idConf contiene el ID actual
+            int resultado = pst.executeUpdate();
+
+            if (resultado > 0) {
+                System.out.println("Datos actualizados correctamente.");
+            } else {
+                System.out.println("No se pudo actualizar los datos.");
+            }
+
+            con.close();
+        } catch (SQLException | NumberFormatException e) {
+            System.out.println("Error al guardar datos de configuración: " + e);
+        }
     }
 
     /**
@@ -36,11 +103,22 @@ public class InterAdministracionDeParametros extends javax.swing.JInternalFrame 
 
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        txt_direccion = new javax.swing.JTextField();
+        txt_iva = new javax.swing.JTextField();
         jButton_Guardar = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
-        txt_email = new javax.swing.JTextField();
+        txt_ganancia = new javax.swing.JTextField();
+        txt_rucempresa = new javax.swing.JTextField();
+        txt_emailempresa = new javax.swing.JTextField();
+        txt_nombreempresa = new javax.swing.JTextField();
+        txt_telefonoempresa = new javax.swing.JTextField();
+        txt_direccionempresa = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
         jLabel_wallpaper = new javax.swing.JLabel();
+        txt_idConf = new javax.swing.JTextField();
 
         setClosable(true);
         setIconifiable(true);
@@ -49,14 +127,20 @@ public class InterAdministracionDeParametros extends javax.swing.JInternalFrame 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("ADMINISTRACIÓN DE PARÁMETROS");
-        getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 10, -1, -1));
+        getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 20, -1, -1));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabel4.setText("Porcentaje de IVA:");
-        getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 80, 120, -1));
-        getContentPane().add(txt_direccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 80, 170, -1));
+        getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 280, 120, -1));
+
+        txt_iva.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_ivaActionPerformed(evt);
+            }
+        });
+        getContentPane().add(txt_iva, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 310, 170, -1));
 
         jButton_Guardar.setBackground(new java.awt.Color(0, 204, 204));
         jButton_Guardar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -66,93 +150,195 @@ public class InterAdministracionDeParametros extends javax.swing.JInternalFrame 
                 jButton_GuardarActionPerformed(evt);
             }
         });
-        getContentPane().add(jButton_Guardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 190, -1, -1));
+        getContentPane().add(jButton_Guardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 360, -1, -1));
 
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel7.setForeground(new java.awt.Color(255, 255, 255));
         jLabel7.setText("Porcentaje de ganancia:");
-        getContentPane().add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 130, -1, -1));
+        getContentPane().add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 280, -1, -1));
 
-        txt_email.addActionListener(new java.awt.event.ActionListener() {
+        txt_ganancia.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txt_emailActionPerformed(evt);
+                txt_gananciaActionPerformed(evt);
             }
         });
-        getContentPane().add(txt_email, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 130, 170, -1));
+        getContentPane().add(txt_ganancia, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 310, 170, -1));
+
+        txt_rucempresa.setEditable(false);
+        txt_rucempresa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_rucempresaActionPerformed(evt);
+            }
+        });
+        getContentPane().add(txt_rucempresa, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 60, 270, -1));
+
+        txt_emailempresa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_emailempresaActionPerformed(evt);
+            }
+        });
+        getContentPane().add(txt_emailempresa, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 220, 270, -1));
+
+        txt_nombreempresa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_nombreempresaActionPerformed(evt);
+            }
+        });
+        getContentPane().add(txt_nombreempresa, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 100, 270, -1));
+
+        txt_telefonoempresa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_telefonoempresaActionPerformed(evt);
+            }
+        });
+        getContentPane().add(txt_telefonoempresa, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 140, 270, -1));
+
+        txt_direccionempresa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_direccionempresaActionPerformed(evt);
+            }
+        });
+        getContentPane().add(txt_direccionempresa, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 180, 270, -1));
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setText("Nombre:");
+        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 100, -1, -1));
+
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel3.setText("RUC:");
+        getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 60, -1, -1));
+
+        jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel5.setText("Télefono:");
+        getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 140, -1, -1));
+
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel6.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel6.setText("Dirección:");
+        getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 180, -1, -1));
+
+        jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel8.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel8.setText("E-mail:");
+        getContentPane().add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 220, -1, -1));
 
         jLabel_wallpaper.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/fondo3.png"))); // NOI18N
-        getContentPane().add(jLabel_wallpaper, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 390, 360));
+        getContentPane().add(jLabel_wallpaper, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 490, 410));
+
+        txt_idConf.setEditable(false);
+        txt_idConf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_idConfActionPerformed(evt);
+            }
+        });
+        getContentPane().add(txt_idConf, new org.netbeans.lib.awtextra.AbsoluteConstraints(430, 160, 40, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_GuardarActionPerformed
 
-        Proveedor proveedor = new Proveedor();
-        Ctrl_Proveedor controlProveedor = new Ctrl_Proveedor();
-
-        if (!txt_nombre.getText().isEmpty()&& !txt_ruc.getText().isEmpty()) {
-            //JOptionPane.showMessageDialog(null, "Correcto");
-
-            if (!controlProveedor.existeProveedor(txt_ruc.getText().trim())) {
-
-                proveedor.setNombre(txt_nombre.getText().trim());
-                proveedor.setRuc(txt_ruc.getText().trim());
-                proveedor.setTelefono(txt_telefono.getText().trim());
-                proveedor.setDireccion(txt_direccion.getText().trim());
-                proveedor.setEmail(txt_email.getText().trim());
-                proveedor.setEstado(1);
-
-                if (controlProveedor.guardar(proveedor)) {
-                    JOptionPane.showMessageDialog(null, "Registro Guardado");
-                    txt_nombre.setBackground(Color.green);
-                    txt_ruc.setBackground(Color.green);
-                    txt_telefono.setBackground(Color.green);
-                    txt_direccion.setBackground(Color.green);
-                    txt_email.setBackground(Color.green);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Error al Guardar");
-                }
-
-            } else {
-                JOptionPane.showMessageDialog(null, "El proveedor ya esta registrado en la Base de Datos.");
-                txt_nombre.setBackground(Color.white);
-                txt_ruc.setBackground(Color.white);
-                txt_telefono.setBackground(Color.white);
-                txt_direccion.setBackground(Color.white);
-                txt_email.setBackground(Color.white);
-            }
+        /*  if (txt_rucempresa.getText().isEmpty() && txt_nombreempresa.getText().isEmpty()
+                && txt_telefonoempresa.getText().isEmpty() && txt_direccionempresa.getText().isEmpty() && txt_emailempresa.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "¡Completa todos los campos!");
         } else {
-            JOptionPane.showMessageDialog(null, "Completa todos los campos");
-            txt_nombre.setBackground(Color.red);
-            txt_ruc.setBackground(Color.red);
-            txt_telefono.setBackground(Color.red);
-            txt_direccion.setBackground(Color.red);
-            txt_email.setBackground(Color.red);
-        }
-        //metodo limpiar
-        this.Limpiar();
+            
+            int porcentajeGanancia = Integer.parseInt(txt_ganancia.getText().trim());
+            int porcentajeIva = Integer.parseInt(txt_iva.getText().trim());
+            
+            Config config = new Config();
+            Ctrl_Config controlConfig = new Ctrl_Config();
+            
+            config.setRuc(txt_rucempresa.getText().trim());
+            config.setNombre(txt_nombreempresa.getText().trim());
+            config.setTelefono(txt_telefonoempresa.getText().trim());
+            config.setDireccion(txt_direccionempresa.getText().trim());
+            config.setEmail(txt_emailempresa.getText().trim());
+            config.setPorcentajeGanancia(porcentajeGanancia);
+            config.setPorcentajeIva(porcentajeIva);
+
+            if (controlConfig.guardar(config, id)) {
+                JOptionPane.showMessageDialog(null, "¡Datos del cliente actualizados!");
+                this.cargarDatosConfig();
+            } else {
+                JOptionPane.showMessageDialog(null, "¡Error al actualizar!");
+            }
+
+        }*/
+        guardarDatosConfig();
     }//GEN-LAST:event_jButton_GuardarActionPerformed
 
-    private void txt_emailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_emailActionPerformed
+    private void txt_gananciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_gananciaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txt_emailActionPerformed
+    }//GEN-LAST:event_txt_gananciaActionPerformed
+
+    private void txt_telefonoempresaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_telefonoempresaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_telefonoempresaActionPerformed
+
+    private void txt_emailempresaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_emailempresaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_emailempresaActionPerformed
+
+    private void txt_rucempresaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_rucempresaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_rucempresaActionPerformed
+
+    private void txt_nombreempresaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_nombreempresaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_nombreempresaActionPerformed
+
+    private void txt_direccionempresaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_direccionempresaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_direccionempresaActionPerformed
+
+    private void txt_ivaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_ivaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_ivaActionPerformed
+
+    private void txt_idConfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_idConfActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_idConfActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton_Guardar;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel_wallpaper;
-    private javax.swing.JTextField txt_direccion;
-    private javax.swing.JTextField txt_email;
+    private javax.swing.JTextField txt_direccionempresa;
+    private javax.swing.JTextField txt_emailempresa;
+    private javax.swing.JTextField txt_ganancia;
+    private javax.swing.JTextField txt_idConf;
+    private javax.swing.JTextField txt_iva;
+    private javax.swing.JTextField txt_nombreempresa;
+    private javax.swing.JTextField txt_rucempresa;
+    private javax.swing.JTextField txt_telefonoempresa;
     // End of variables declaration//GEN-END:variables
-    private void Limpiar() {
-        txt_nombre.setText("");
-        txt_ruc.setText("");
-        txt_telefono.setText("");
-        txt_direccion.setText("");
-        txt_email.setText("");
+
+    /* public void ListarConfig() {
+        Config conf = controlConfig.BuscarDatos();
+        if (conf != null) {
+        txt_idConf.setText(String.valueOf(conf.getId()));
+        txt_rucempresa.setText(conf.getRuc());
+        txt_nombreempresa.setText(conf.getNombre());
+        txt_telefonoempresa.setText(conf.getTelefono());
+        txt_direccionempresa.setText(conf.getDireccion());
+        txt_emailempresa.setText(conf.getEmail()); // Asumiendo que tienes un campo de email en tu interfaz
+        txt_ganancia.setText(String.valueOf(conf.getPorcentajeGanancia())); // Asumiendo que tienes un campo para porcentaje de ganancia
+        txt_iva.setText(String.valueOf(conf.getPorcentajeIva())); // Asumiendo que tienes un campo para porcentaje de IVA
+    } else {
+        // Manejo si la configuración no se encuentra
+        JOptionPane.showMessageDialog(null, "No se encontraron datos de configuración");
     }
+}*/
 }

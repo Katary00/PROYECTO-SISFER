@@ -18,8 +18,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
 import modelo.Cliente;
+import javax.swing.RowFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+import java.util.List;
+import java.util.ArrayList;
+import javax.swing.ButtonGroup;
 
 /**
  *
@@ -35,13 +40,68 @@ public class InterGestionarCliente extends javax.swing.JInternalFrame {
         this.setTitle("Gestionar Clientes");
         //Cargar tabla
         this.CargarTablaClientes();
+        grupoBtn1.add(rdBtnHabilitados);
+        grupoBtn1.add(rdBtnDeshabilitados);
+        txt_apellido.setEnabled(false);
+        txt_nombre.setEnabled(false);
+        txt_cedula.setEnabled(false);
+        lblEstado.setVisible(false);
+        txt_estado.setVisible(false);
+        
     }
     
     
     private void CargarTablaClientes() {
         Connection con = Conexion.conectar();
         DefaultTableModel model = new DefaultTableModel();
-        String sql = "select * from tb_cliente";
+        String sql = "select * from tb_cliente where estado = 1";
+        Statement st;
+        try {
+            st = con.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            InterGestionarCliente.jTable_clientes = new JTable(model);
+            InterGestionarCliente.jScrollPane1.setViewportView(InterGestionarCliente.jTable_clientes);
+
+            model.addColumn("N°");//ID
+            model.addColumn("C.I");
+            model.addColumn("Nombre");
+            model.addColumn("Apellido");
+            model.addColumn("Teléfono");
+            model.addColumn("Dirección");
+            model.addColumn("Email");
+            model.addColumn("Estado");
+
+            while (rs.next()) {
+                Object fila[] = new Object[8];
+                for (int i = 0; i < 8; i++) {
+                    fila[i] = rs.getObject(i + 1);
+                }
+                model.addRow(fila);
+            }
+            con.close();
+        } catch (SQLException e) {
+            System.out.println("Error al llenar la tabla clientes: " + e);
+        }
+        //evento para obtener campo al cual el usuario da click
+        //y obtener la interfaz que mostrara la informacion general
+        jTable_clientes.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int fila_point = jTable_clientes.rowAtPoint(e.getPoint());
+                int columna_point = 0;
+
+                if (fila_point > -1) {
+                    idCliente = (int) model.getValueAt(fila_point, columna_point);
+                    EnviarDatosClienteSeleccionado(idCliente);//metodo
+                }
+            }
+        });
+    }
+    
+    private void CargarTablaClientesDesh() {
+        Connection con = Conexion.conectar();
+        DefaultTableModel model = new DefaultTableModel();
+        String sql = "select * from tb_cliente where estado = 0";
         Statement st;
         try {
             st = con.createStatement();
@@ -122,6 +182,7 @@ public class InterGestionarCliente extends javax.swing.JInternalFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        grupoBtn1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -139,9 +200,15 @@ public class InterGestionarCliente extends javax.swing.JInternalFrame {
         txt_telefono = new javax.swing.JTextField();
         txt_apellido = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        txt_estado = new javax.swing.JTextField();
+        lblEstado = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jButton_actualizar = new javax.swing.JButton();
         jButton_eliminar = new javax.swing.JButton();
+        txt_buscar = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        rdBtnHabilitados = new javax.swing.JRadioButton();
+        rdBtnDeshabilitados = new javax.swing.JRadioButton();
         jLabel_wallpaper = new javax.swing.JLabel();
 
         setClosable(true);
@@ -226,8 +293,12 @@ public class InterGestionarCliente extends javax.swing.JInternalFrame {
 
         jLabel2.setText("Apellido:");
         jPanel3.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 20, -1, -1));
+        jPanel3.add(txt_estado, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 90, 170, -1));
 
-        getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 330, 870, 100));
+        lblEstado.setText("Estado:");
+        jPanel3.add(lblEstado, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 90, -1, -1));
+
+        getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 340, 870, 120));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -249,6 +320,38 @@ public class InterGestionarCliente extends javax.swing.JInternalFrame {
             }
         });
         jPanel1.add(jButton_eliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 80, 80, -1));
+
+        txt_buscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_buscarActionPerformed(evt);
+            }
+        });
+        txt_buscar.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txt_buscarKeyReleased(evt);
+            }
+        });
+        jPanel1.add(txt_buscar, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 160, 120, -1));
+
+        jLabel8.setFont(new java.awt.Font("Franklin Gothic Demi", 0, 12)); // NOI18N
+        jLabel8.setText("Buscar Cliente:");
+        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 140, -1, -1));
+
+        rdBtnHabilitados.setText("Habilitados");
+        rdBtnHabilitados.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rdBtnHabilitadosActionPerformed(evt);
+            }
+        });
+        jPanel1.add(rdBtnHabilitados, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 200, -1, -1));
+
+        rdBtnDeshabilitados.setText("Deshabilitados");
+        rdBtnDeshabilitados.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rdBtnDeshabilitadosActionPerformed(evt);
+            }
+        });
+        jPanel1.add(rdBtnDeshabilitados, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 230, -1, -1));
 
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 50, 140, 270));
 
@@ -272,7 +375,7 @@ public class InterGestionarCliente extends javax.swing.JInternalFrame {
             cliente.setApellido(txt_apellido.getText().trim());
             cliente.setTelefono(txt_telefono.getText().trim());
             cliente.setDireccion(txt_direccion.getText().trim());
-            cliente.setDireccion(txt_email.getText().trim());
+            cliente.setEmail(txt_email.getText().trim());
             cliente.setEstado(1);
 
             if (controlCliente.actualizar(cliente, idCliente)) {
@@ -318,8 +421,33 @@ public class InterGestionarCliente extends javax.swing.JInternalFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txt_apellidoActionPerformed
 
+    private void txt_buscarKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_buscarKeyReleased
+    String cedula = txt_buscar.getText();
+    String nombre = txt_nombre.getText(); // Suponiendo que txt_nombre es el campo de texto para buscar por nombre
+    buscarPersona(cedula, nombre);
+    }//GEN-LAST:event_txt_buscarKeyReleased
+
+    private void txt_buscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_buscarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_buscarActionPerformed
+
+    private void rdBtnHabilitadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdBtnHabilitadosActionPerformed
+        // TODO add your handling code here:
+        this.CargarTablaClientes();
+        lblEstado.setVisible(false);
+        txt_estado.setVisible(false);
+    }//GEN-LAST:event_rdBtnHabilitadosActionPerformed
+
+    private void rdBtnDeshabilitadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdBtnDeshabilitadosActionPerformed
+        // TODO add your handling code here:
+        this.CargarTablaClientesDesh();
+        lblEstado.setVisible(true);
+        txt_estado.setVisible(true);
+    }//GEN-LAST:event_rdBtnDeshabilitadosActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup grupoBtn1;
     private javax.swing.JButton jButton_actualizar;
     private javax.swing.JButton jButton_eliminar;
     private javax.swing.JLabel jLabel1;
@@ -329,16 +457,22 @@ public class InterGestionarCliente extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel_wallpaper;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     public static javax.swing.JScrollPane jScrollPane1;
     public static javax.swing.JTable jTable_clientes;
+    private javax.swing.JLabel lblEstado;
+    private javax.swing.JRadioButton rdBtnDeshabilitados;
+    private javax.swing.JRadioButton rdBtnHabilitados;
     private javax.swing.JTextField txt_apellido;
+    private javax.swing.JTextField txt_buscar;
     private javax.swing.JTextField txt_cedula;
     private javax.swing.JTextField txt_direccion;
     private javax.swing.JTextField txt_email;
+    private javax.swing.JTextField txt_estado;
     private javax.swing.JTextField txt_nombre;
     private javax.swing.JTextField txt_telefono;
     // End of variables declaration//GEN-END:variables
@@ -356,6 +490,26 @@ public class InterGestionarCliente extends javax.swing.JInternalFrame {
         txt_direccion.setText("");
         txt_email.setText("");
     }
+    
+private void buscarPersona(String cedula, String nombre) {
+    DefaultTableModel model = (DefaultTableModel) jTable_clientes.getModel();
+    TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+    jTable_clientes.setRowSorter(sorter);
+    
+    List<RowFilter<Object, Object>> filters = new ArrayList<>();
+    
+    if (cedula.trim().length() != 0) {
+        filters.add(RowFilter.regexFilter(cedula));
+    }
+    if (!nombre.isEmpty()) {
+        filters.add(RowFilter.regexFilter("(?i)" + nombre)); // El modificador (?i) hace que la búsqueda sea insensible a mayúsculas y minúsculas
+    }
+    
+    RowFilter<Object, Object> combinedFilter = RowFilter.andFilter(filters);
+    sorter.setRowFilter(combinedFilter);
+}
+
+
  }
 
 

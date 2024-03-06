@@ -64,10 +64,30 @@ public class Ctrl_Usuario {
         return respuesta;
     }
     
-        
+    public String obtenerRolUsuario(Usuario objeto) {
+    String rol = null;
+    Connection cn = Conexion.conectar();
+    String sql = "SELECT rol FROM tb_usuario WHERE usuario = ? AND password = ?";
+    try {
+        PreparedStatement pst = cn.prepareStatement(sql);
+        pst.setString(1, objeto.getUsuario());
+        pst.setString(2, objeto.getPassword());
+        ResultSet rs = pst.executeQuery();
+        if (rs.next()) {
+            rol = rs.getString("rol");
+        }
+    } catch (SQLException e) {
+        System.out.println("Error al obtener rol del usuario");
+        JOptionPane.showMessageDialog(null, "Error al obtener rol del usuario");
+    }
+    return rol;
+}   
     
     //metodo para inciar sesion
-    public boolean loginUser(Usuario objeto) {
+
+    
+    
+        /*public boolean loginUser(Usuario objeto) {
         boolean respuesta = false;
 
         Connection cn = Conexion.conectar();
@@ -84,7 +104,10 @@ public class Ctrl_Usuario {
             JOptionPane.showMessageDialog(null, "Error al Iniciar Sesion");
         }
         return respuesta;
-    }
+    }*/
+    
+    
+
     
         /**
      * **************************************************

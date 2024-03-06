@@ -21,7 +21,7 @@ public class FrmLogin extends javax.swing.JFrame {
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.setTitle("Login - SISFER");
-        this.setSize(new Dimension(700, 500));
+        this.setSize(new Dimension(1100, 700));
     }
 
     /**
@@ -36,7 +36,6 @@ public class FrmLogin extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         txt_usuario = new javax.swing.JTextField();
@@ -60,30 +59,27 @@ public class FrmLogin extends javax.swing.JFrame {
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
         jPanel2.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(68, 71, -1, -1));
 
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/user.png"))); // NOI18N
-        jPanel2.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 30, -1, -1));
-
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel6.setText("USERNAME");
-        jPanel2.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 210, -1, -1));
+        jPanel2.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 30, -1, -1));
 
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel7.setText("PASSWORD");
-        jPanel2.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 270, -1, -1));
+        jPanel2.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 110, -1, -1));
 
         txt_usuario.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 txt_usuarioKeyPressed(evt);
             }
         });
-        jPanel2.add(txt_usuario, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 210, 170, -1));
+        jPanel2.add(txt_usuario, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 70, 260, -1));
 
         txt_password.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 txt_passwordKeyPressed(evt);
             }
         });
-        jPanel2.add(txt_password, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 270, 170, -1));
+        jPanel2.add(txt_password, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 150, 260, -1));
 
         jButton_IniciarSesion.setBackground(new java.awt.Color(0, 204, 204));
         jButton_IniciarSesion.setFont(new java.awt.Font("Segoe UI Semibold", 0, 12)); // NOI18N
@@ -93,25 +89,25 @@ public class FrmLogin extends javax.swing.JFrame {
                 jButton_IniciarSesionActionPerformed(evt);
             }
         });
-        jPanel2.add(jButton_IniciarSesion, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 340, -1, -1));
+        jPanel2.add(jButton_IniciarSesion, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 200, -1, -1));
 
-        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 20, 340, 420));
+        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 330, 340, 260));
 
         jLabel1.setFont(new java.awt.Font("Rockwell", 1, 36)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("SISFER");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 20, 130, 70));
+        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 0, 130, 70));
 
         jLabel2.setFont(new java.awt.Font("SimSun", 1, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("SISTEMA DE GESTIÓN");
-        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 380, -1, -1));
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 70, -1, -1));
 
         jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/LOGO El fluorescente.png"))); // NOI18N
-        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 120, -1, -1));
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(470, 100, -1, -1));
 
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 700, 500));
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1100, 700));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -177,7 +173,6 @@ public class FrmLogin extends javax.swing.JFrame {
     private javax.swing.JButton jButton_IniciarSesion;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -189,14 +184,13 @@ public class FrmLogin extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     
     
-    private void Login() {
+   /* private void Login() {
         if (!txt_usuario.getText().isEmpty() && !txt_password.getText().isEmpty()) {
             Ctrl_Usuario controlUsuario = new Ctrl_Usuario();
             Usuario usuario = new Usuario();
             usuario.setUsuario(txt_usuario.getText().trim());
             usuario.setPassword(txt_password.getText().trim());
             if (controlUsuario.loginUser(usuario)) {
-                //JOptionPane.showMessageDialog(null, "Login Correcto...");
                 FrmMenu menu = new FrmMenu();
                 menu.setVisible(true);
                 this.dispose();
@@ -207,5 +201,34 @@ public class FrmLogin extends javax.swing.JFrame {
         } else {
             JOptionPane.showMessageDialog(null, "Ingrese sus credenciales");
         }
+    }*/
+    
+private void Login() {
+    if (!txt_usuario.getText().isEmpty() && !txt_password.getText().isEmpty()) {
+        Ctrl_Usuario controlUsuario = new Ctrl_Usuario();
+        Usuario usuario = new Usuario();
+        usuario.setUsuario(txt_usuario.getText().trim());
+        usuario.setPassword(txt_password.getText().trim());
+        
+        String rolUsuario = controlUsuario.obtenerRolUsuario(usuario);
+        if (rolUsuario != null) {
+            if (rolUsuario.equals("Administrador")) {
+                FrmMenu menu = new FrmMenu();
+                menu.setVisible(true);
+                this.dispose();
+            } else if (rolUsuario.equals("Vendedor")) {
+                FrmMenuVendedor menuVendedor = new FrmMenuVendedor();
+                menuVendedor.setVisible(true);
+                this.dispose();
+            } else {
+                JOptionPane.showMessageDialog(null, "Rol de usuario no reconocido");
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Usuario o Clave Incorrectos");
+        }
+    } else {
+        JOptionPane.showMessageDialog(null, "Ingrese sus credenciales");
     }
+}
+
 }

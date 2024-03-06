@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import javax.swing.JOptionPane;
 import modelo.Cliente;
 import modelo.Proveedor;
+import validadores.Validadores;
 
 /**
  *
@@ -25,6 +26,7 @@ public class InterCliente extends javax.swing.JInternalFrame {
         initComponents();
         this.setSize(new Dimension(400, 400));
         this.setTitle("Nuevo Cliente");
+        Validadores validadores= new Validadores();
     }
 
     /**
@@ -118,7 +120,7 @@ public class InterCliente extends javax.swing.JInternalFrame {
         getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 150, -1, -1));
 
         jLabel_wallpaper.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/fondo3.png"))); // NOI18N
-        getContentPane().add(jLabel_wallpaper, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 390, 360));
+        getContentPane().add(jLabel_wallpaper, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 390, 380));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -140,6 +142,71 @@ public class InterCliente extends javax.swing.JInternalFrame {
                 cliente.setDireccion(txt_direccion.getText().trim());
                 cliente.setEmail(txt_email.getText().trim());
                 cliente.setEstado(1);
+                
+                
+                 String cedulaCliente = txt_cedula.getText().trim();        
+        // Validar el cedula del cliente
+        String mensajeError2 = Validadores.validarCedula(cedulaCliente);
+        
+        if (mensajeError2 != null) {
+            JOptionPane.showMessageDialog(this, mensajeError2, "Error", JOptionPane.ERROR_MESSAGE);
+            return; 
+        }   
+            
+            
+            
+            String nombreCliente = txt_nombre.getText().trim();        
+        // Validar el nombre del cliente
+        String mensajeError = Validadores.validarNombreCliente(nombreCliente);
+        
+        if (mensajeError != null) {
+            JOptionPane.showMessageDialog(this, mensajeError, "Error", JOptionPane.ERROR_MESSAGE);
+            return; 
+        }
+        
+        String apellidoCliente = txt_apellido.getText().trim();        
+        // Validar el nombre del cliente
+        String mensajeError3 = Validadores.validarNombreCliente(apellidoCliente);
+        
+        if (mensajeError3 != null) {
+            JOptionPane.showMessageDialog(this, mensajeError3, "Error", JOptionPane.ERROR_MESSAGE);
+            return; 
+        }
+        
+        
+        
+        String telefonoCliente = txt_telefono.getText().trim();        
+        // Validar el nombre del cliente
+        String mensajeError4 = Validadores.validarNumeroTelefono(telefonoCliente);
+        
+        if (mensajeError4 != null) {
+            JOptionPane.showMessageDialog(this, mensajeError4, "Error", JOptionPane.ERROR_MESSAGE);
+            return; 
+        }
+        
+        
+        
+        String direccionCliente = txt_direccion.getText().trim();        
+        // Validar el nombre del cliente
+        String mensajeError5 = Validadores.validardDireccionCliente(direccionCliente);
+        
+        if (mensajeError5 != null) {
+            JOptionPane.showMessageDialog(this, mensajeError5, "Error", JOptionPane.ERROR_MESSAGE);
+            return; 
+        }
+         
+        
+        
+        String correoCliente = txt_email.getText().trim();        
+        // Validar el nombre del cliente
+        String mensajeError6 = Validadores.validardCorreoCliente(correoCliente);
+        
+        if (mensajeError6 != null) {
+            JOptionPane.showMessageDialog(this, mensajeError6, "Error", JOptionPane.ERROR_MESSAGE);
+            return; 
+        }
+        
+                
 
                 if (controlCliente.guardar(cliente)) {
                     JOptionPane.showMessageDialog(null, "Registro Guardado");
@@ -162,6 +229,21 @@ public class InterCliente extends javax.swing.JInternalFrame {
                 txt_direccion.setBackground(Color.white);
                 txt_email.setBackground(Color.white);
             }
+            
+            
+            
+            
+            
+            
+            
+            
+        
+        
+        
+        
+        
+        
+        
         } else {
             JOptionPane.showMessageDialog(null, "Completa todos los campos");
             txt_nombre.setBackground(Color.red);
@@ -206,4 +288,5 @@ public class InterCliente extends javax.swing.JInternalFrame {
         txt_direccion.setText("");
         txt_email.setText("");
     }
+
 }

@@ -60,6 +60,7 @@ public class InterGestionarCategoria extends javax.swing.JInternalFrame {
         jButton_eliminar = new javax.swing.JButton();
         jLabel_wallpaper = new javax.swing.JLabel();
 
+        setClosable(true);
         setIconifiable(true);
         setResizable(true);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -104,7 +105,7 @@ public class InterGestionarCategoria extends javax.swing.JInternalFrame {
         });
         jPanel3.add(txt_descripcion, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 40, 150, -1));
 
-        getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 220, 170, 90));
+        getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 260, 170, 90));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());

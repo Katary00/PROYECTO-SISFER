@@ -136,6 +136,8 @@ public class InterGestionarProveedor extends javax.swing.JInternalFrame {
         txt_telefono = new javax.swing.JTextField();
         jButton_actualizar = new javax.swing.JButton();
         jButton_eliminar = new javax.swing.JButton();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
         jLabel_wallpaper = new javax.swing.JLabel();
 
         setClosable(true);
@@ -218,7 +220,7 @@ public class InterGestionarProveedor extends javax.swing.JInternalFrame {
                 jButton_actualizarActionPerformed(evt);
             }
         });
-        jPanel3.add(jButton_actualizar, new org.netbeans.lib.awtextra.AbsoluteConstraints(640, 60, -1, -1));
+        jPanel3.add(jButton_actualizar, new org.netbeans.lib.awtextra.AbsoluteConstraints(570, 60, -1, -1));
 
         jButton_eliminar.setBackground(new java.awt.Color(255, 153, 153));
         jButton_eliminar.setText("Eliminar");
@@ -227,7 +229,11 @@ public class InterGestionarProveedor extends javax.swing.JInternalFrame {
                 jButton_eliminarActionPerformed(evt);
             }
         });
-        jPanel3.add(jButton_eliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(760, 60, 80, -1));
+        jPanel3.add(jButton_eliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 60, 80, -1));
+        jPanel3.add(jTextField1, new org.netbeans.lib.awtextra.AbsoluteConstraints(780, 60, -1, -1));
+
+        jLabel2.setText("Buscar:");
+        jPanel3.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(800, 80, -1, -1));
 
         getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 330, 870, 100));
 
@@ -296,6 +302,7 @@ public class InterGestionarProveedor extends javax.swing.JInternalFrame {
     private javax.swing.JButton jButton_actualizar;
     private javax.swing.JButton jButton_eliminar;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -306,6 +313,7 @@ public class InterGestionarProveedor extends javax.swing.JInternalFrame {
     private javax.swing.JPanel jPanel3;
     public static javax.swing.JScrollPane jScrollPane1;
     public static javax.swing.JTable jTable_proveedores;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField txt_direccion;
     private javax.swing.JTextField txt_email;
     private javax.swing.JTextField txt_nombre;

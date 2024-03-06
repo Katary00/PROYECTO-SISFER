@@ -146,6 +146,7 @@ public class InterGestionarUsuario extends javax.swing.JInternalFrame {
         jButton_eliminar = new javax.swing.JButton();
         jLabel_wallpaper = new javax.swing.JLabel();
 
+        setClosable(true);
         setIconifiable(true);
         setResizable(true);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());

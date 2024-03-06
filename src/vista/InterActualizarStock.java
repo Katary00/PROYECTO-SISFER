@@ -4,16 +4,24 @@
  */
 package vista;
 
-import controlador.Ctrl_Usuario;
+import conexion.Conexion;
+import controlador.Ctrl_Producto;
 import java.awt.Dimension;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import javax.swing.JOptionPane;
-import modelo.Usuario;
+import modelo.Producto;
 
 /**
  *
  * @author Emilio
  */
 public class InterActualizarStock extends javax.swing.JInternalFrame {
+
+    int idProducto = 0;
+    int cantidad = 0;
 
     /**
      * Creates new form InterUsuario
@@ -22,6 +30,7 @@ public class InterActualizarStock extends javax.swing.JInternalFrame {
         initComponents();
         this.setSize(new Dimension(400, 300));
         this.setTitle("Nuevo Usuario");
+        this.CargarComboProductos();
     }
 
     /**
@@ -37,11 +46,11 @@ public class InterActualizarStock extends javax.swing.JInternalFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        txt_stocknuevo = new javax.swing.JTextField();
-        txt_stockactual = new javax.swing.JTextField();
+        txt_cantidad_nueva = new javax.swing.JTextField();
+        txt_cantidad_actual = new javax.swing.JTextField();
         jComboBox_producto = new javax.swing.JComboBox<>();
         jButton_Guardar = new javax.swing.JButton();
-        txt_stocktotal = new javax.swing.JTextField();
+        txt_cantidad_total = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jLabel_wallpaper = new javax.swing.JLabel();
 
@@ -71,10 +80,16 @@ public class InterActualizarStock extends javax.swing.JInternalFrame {
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabel4.setText("Stock nuevo:");
         getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 140, 80, -1));
-        getContentPane().add(txt_stocknuevo, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 140, 170, -1));
-        getContentPane().add(txt_stockactual, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 100, 170, -1));
 
-        jComboBox_producto.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccione el producto:" }));
+        txt_cantidad_nueva.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txt_cantidad_nuevaKeyReleased(evt);
+            }
+        });
+        getContentPane().add(txt_cantidad_nueva, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 140, 170, -1));
+        getContentPane().add(txt_cantidad_actual, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 100, 170, -1));
+
+        jComboBox_producto.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccione un producto:" }));
         jComboBox_producto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox_productoActionPerformed(evt);
@@ -91,7 +106,7 @@ public class InterActualizarStock extends javax.swing.JInternalFrame {
             }
         });
         getContentPane().add(jButton_Guardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 220, -1, -1));
-        getContentPane().add(txt_stocktotal, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 180, 170, -1));
+        getContentPane().add(txt_cantidad_total, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 180, 170, -1));
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
@@ -105,39 +120,107 @@ public class InterActualizarStock extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jComboBox_productoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox_productoActionPerformed
-        // TODO add your handling code here:
+        this.MostrarStock();
     }//GEN-LAST:event_jComboBox_productoActionPerformed
 
     private void jButton_GuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_GuardarActionPerformed
-    if (txt_stockactual.getText().isEmpty() || txt_stocknuevo.getText().isEmpty() || txt_usuario.getText().isEmpty()
-            || txt_password.getText().isEmpty()) {
-        JOptionPane.showMessageDialog(null, "Completa todos los campos");
-    } else {
-        //validamos si el usuario ya está registrado
-        Usuario usuario = new Usuario();
-        Ctrl_Usuario controlUsuario = new Ctrl_Usuario();
-        if (!controlUsuario.existeUsuario(txt_usuario.getText().trim())) {
-            //enviamos datos del usuario
-            usuario.setNombre(txt_stockactual.getText().trim());
-            usuario.setApellido(txt_stocknuevo.getText().trim());
-            usuario.setUsuario(txt_usuario.getText().trim());
-            usuario.setPassword(txt_password.getText().trim());
-            // Obtener el rol seleccionado del JComboBox
-            String rolSeleccionado = jComboBox_producto.getSelectedItem().toString();
-            usuario.setRol(rolSeleccionado);
-            usuario.setEstado(1);
-            
-            if (controlUsuario.guardar(usuario)) {
-                JOptionPane.showMessageDialog(null, "¡Usuario Registrado!");
+        /*//validamos seleccion del producto
+        if (!jComboBox_producto.getSelectedItem().equals("Seleccione producto:")) {
+            //Validamos campos vacios
+            if (!txt_cantidad_nueva.getText().isEmpty()) {
+                //validamos que el usuario no ingrese otros caracteres no numericos
+                boolean validacion = validar(txt_cantidad_nueva.getText().trim());
+                if (validacion == true) {
+                    //validar que la cantidad sea mayor cero (0)
+                    if (Integer.parseInt(txt_cantidad_nueva.getText()) > 0) {
+
+                        Producto producto = new Producto();
+                        Ctrl_Producto controlProducto = new Ctrl_Producto();
+                        int stockActual = Integer.parseInt(txt_cantidad_actual.getText().trim());
+                        int stockNuevo = Integer.parseInt(txt_cantidad_nueva.getText().trim());
+
+                        stockNuevo = stockActual + stockNuevo;
+                        
+                        
+                        producto.setCantidad(stockNuevo);
+                        if (controlProducto.actualizarStock(producto, idProducto)) {
+                            JOptionPane.showMessageDialog(null, "Stock Actualizado");
+                            jComboBox_producto.setSelectedItem("Seleccione un producto:");
+                            txt_cantidad_actual.setText("");
+                            txt_cantidad_nueva.setText("");
+                            txt_cantidad_total.setText("");
+                            this.CargarComboProductos();
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Error al Actualizar Stock");
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "La cantidad no puede ser cero ni negativa");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "En la cantidad no se admiten caracteres no numericos");
+                }
             } else {
-                JOptionPane.showMessageDialog(null, "¡Error al registrar Usuario!");
+                JOptionPane.showMessageDialog(null, "Ingrese una nueva cantidad para sumar el stock del producto");
             }
         } else {
-            JOptionPane.showMessageDialog(null, "El Usuario ya está registrado, ingrese otro.");
+            JOptionPane.showMessageDialog(null, "Seleccione un producto");
+        }*/
+
+        if (!jComboBox_producto.getSelectedItem().equals("Seleccione producto:")) {
+            // Validamos campos vacíos
+            if (!txt_cantidad_nueva.getText().isEmpty()) {
+                // Validamos que el usuario no ingrese otros caracteres no numéricos
+                boolean validacion = validar(txt_cantidad_nueva.getText().trim());
+                if (validacion) {
+                    // Validar que la cantidad sea mayor que cero (0)
+                    
+                    int stockNuevo = 0;
+                    try {
+                        stockNuevo = Integer.parseInt(txt_cantidad_nueva.getText().trim());
+                    } catch (NumberFormatException e) {
+                        JOptionPane.showMessageDialog(null, "Ingrese una cantidad nueva válida.");
+                        return;
+                    }
+                    
+                    int stockActual = 0;
+                    try {
+                        stockActual = Integer.parseInt(txt_cantidad_actual.getText().trim());
+                    } catch (NumberFormatException e) {
+                        JOptionPane.showMessageDialog(null, "Ingrese una cantidad actual válida.");
+                        return;
+                    }
+
+
+                    int totalStock = calcularStockTotal(stockActual, stockNuevo);
+
+                    Producto producto = new Producto();
+                    Ctrl_Producto controlProducto = new Ctrl_Producto();
+                    producto.setCantidad(totalStock);
+
+                    if (controlProducto.actualizarStock(producto, idProducto)) {
+                        JOptionPane.showMessageDialog(null, "Stock Actualizado");
+                        jComboBox_producto.setSelectedItem("Seleccione un producto:");
+                        txt_cantidad_actual.setText("");
+                        txt_cantidad_nueva.setText("");
+                        txt_cantidad_total.setText("");
+                        this.CargarComboProductos();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Error al Actualizar Stock");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "En la cantidad no se admiten caracteres no numéricos");
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Ingrese una nueva cantidad para sumar el stock del producto");
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Seleccione un producto");
         }
-    }
-    this.Limpiar();
     }//GEN-LAST:event_jButton_GuardarActionPerformed
+
+    private void txt_cantidad_nuevaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_cantidad_nuevaKeyReleased
+        calcularStockTotal();
+    }//GEN-LAST:event_txt_cantidad_nuevaKeyReleased
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -149,14 +232,98 @@ public class InterActualizarStock extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel_wallpaper;
-    private javax.swing.JTextField txt_stockactual;
-    private javax.swing.JTextField txt_stocknuevo;
-    private javax.swing.JTextField txt_stocktotal;
+    private javax.swing.JTextField txt_cantidad_actual;
+    private javax.swing.JTextField txt_cantidad_nueva;
+    private javax.swing.JTextField txt_cantidad_total;
     // End of variables declaration//GEN-END:variables
-        private void Limpiar() {
-        txt_stockactual.setText("");
-        txt_stocknuevo.setText("");
-        txt_password.setText("");
-        txt_usuario.setText("");
+
+    private void CargarComboProductos() {
+
+        Connection cn = Conexion.conectar();
+        String sql = "select * from tb_producto";
+        Statement st;
+        try {
+
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            jComboBox_producto.removeAllItems();
+            jComboBox_producto.addItem("Seleccione producto:");
+            while (rs.next()) {
+                jComboBox_producto.addItem(rs.getString("nombre"));
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al cargar los productos en: " + e);
+        }
+
     }
+
+    private void MostrarStock() {
+        try {
+
+            Connection cn = Conexion.conectar();
+            String sql = "select * from tb_producto where nombre = '" + this.jComboBox_producto.getSelectedItem() + "'";
+            Statement st;
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+
+            if (rs.next()) {
+                idProducto = rs.getInt("idProducto");
+                cantidad = rs.getInt("cantidad");
+                txt_cantidad_actual.setText(String.valueOf(cantidad));
+            } else {
+                txt_cantidad_actual.setText("");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al obtener stock del producto en: " + e);
+        }
+    }
+
+    private boolean validar(String valor) {
+        int num;
+        try {
+            num = Integer.parseInt(valor);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    public void calcularStockTotal() {
+        String stockActualTexto = txt_cantidad_actual.getText().trim();
+        String stockNuevoTexto = txt_cantidad_nueva.getText().trim();
+
+        // Verificar si el campo de stock actual está en blanco
+        if (stockActualTexto.isEmpty()) {
+            txt_cantidad_nueva.setText("");
+            txt_cantidad_total.setText("");
+            return;
+        }
+
+        if (stockNuevoTexto.isEmpty()) {
+            txt_cantidad_total.setText("");
+            return;
+        }
+
+        // Verificar si el campo de stock nuevo está en blanco
+        if (stockNuevoTexto.isEmpty()) {
+            txt_cantidad_total.setText(stockActualTexto); // Mostrar el stock actual si el stock nuevo está en blanco
+            return;
+        }
+
+        try {
+            int actualStock = Integer.parseInt(stockActualTexto);
+            int nuevoStock = Integer.parseInt(stockNuevoTexto);
+            int totalStock = calcularStockTotal(actualStock, nuevoStock);
+
+            txt_cantidad_total.setText(String.valueOf(totalStock));
+        } catch (NumberFormatException e) {
+            System.out.println("Ingrese un número válido en el campo de stock.");
+        }
+    }
+
+    public int calcularStockTotal(int actualStock, int nuevoStock) {
+        return actualStock + nuevoStock;
+    }
+
 }

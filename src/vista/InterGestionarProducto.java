@@ -5,9 +5,11 @@
 package vista;
 
 import conexion.Conexion;
+import controlador.Ctrl_Producto;
 
-import controlador.Ctrl_Usuario;
+
 import java.awt.Dimension;
+import java.awt.HeadlessException;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
@@ -18,7 +20,7 @@ import java.sql.Statement;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-import modelo.Usuario;
+import modelo.Producto;
 
 /**
  *
@@ -26,67 +28,123 @@ import modelo.Usuario;
  */
 public class InterGestionarProducto extends javax.swing.JInternalFrame {
 
-    private int idUsuario = 0;
+    private int idProducto;
+    int obtenerIdCategoriaCombo = 0;
+    int obtenerIdProveedorCombo = 0;
 
     public InterGestionarProducto() {
         initComponents();
         this.setSize(new Dimension(900, 500));
-        this.setTitle("Gestionar Usuarios");
+        this.setTitle("Gestionar Productos");
         //Cargar tabla
-        this.CargarTablaUsuarios();
+        this.CargarTablaProductos();
+        this.CargarComboCategoria();
+        this.CargarComboProveedor();
     }
     
+        private void CargarComboCategoria() {
+        Connection cn = Conexion.conectar();
+        String sql = "select * from tb_categoria";
+        Statement st;
+        try {
+
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            jComboBox_categoria.removeAllItems();
+            jComboBox_categoria.addItem("Seleccione una categoria:");
+            while (rs.next()) {
+                jComboBox_categoria.addItem(rs.getString("descripcion"));
+            }
+            cn.close();
+
+        } catch (SQLException e) {
+            System.out.println("¡Error al cargar categorias!");
+        }
+    }
+        
+        private void CargarComboProveedor() {
+        Connection cn = Conexion.conectar();
+        String sql = "select * from tb_proveedor";
+        Statement st;
+        try {
+
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            jComboBox_proveedor.removeAllItems();
+            jComboBox_proveedor.addItem("Seleccione un proveedor:");
+            while (rs.next()) {
+                jComboBox_proveedor.addItem(rs.getString("nombre"));
+            }
+            cn.close();
+
+        } catch (SQLException e) {
+            System.out.println("¡Error al cargar proveedor!");
+        }
+    }
     
-    /*
-     * *****************************************************
-     * metodo para mostrar todos los clientes registrados
-     * *****************************************************
-     */
-    private void CargarTablaUsuarios() {
+        
+
+    
+    String descripcionCategoria = "";
+    String nombreProveedor = "";
+    double precio = 0.0;
+    int porcentajeIva = 0;
+    double IVA = 0;
+
+    private void CargarTablaProductos() {
         Connection con = Conexion.conectar();
         DefaultTableModel model = new DefaultTableModel();
-        String sql = "select * from tb_usuario";
+        String sql = "select p.idProducto, p.codigo, p.nombre, p.cantidad, p.precio, p.precioVenta, p.porcentajeIva, c.descripcion, pe.nombre, p.estado from tb_producto As p, tb_categoria As c, tb_proveedor As pe where p.idCategoria = c.idCategoria and p.idProveedor = pe.idProveedor;";
         Statement st;
         try {
             st = con.createStatement();
             ResultSet rs = st.executeQuery(sql);
-            InterGestionarProducto.jTable_usuarios = new JTable(model);
-            InterGestionarProducto.jScrollPane1.setViewportView(InterGestionarProducto.jTable_usuarios);
+            InterGestionarProducto.jTable_productos = new JTable(model);
+            InterGestionarProducto.jScrollPane1.setViewportView(InterGestionarProducto.jTable_productos);
 
-            model.addColumn("N°");//ID
+            model.addColumn("N°");
+            model.addColumn("Código");
             model.addColumn("Nombre");
-            model.addColumn("Apellido");
-            model.addColumn("Usuario");
-            model.addColumn("Password");
-            model.addColumn("Rol");
+            model.addColumn("Cantidad");
+            model.addColumn("Precio");
+            model.addColumn("Precio Venta");
+            model.addColumn("IVA");
+            model.addColumn("Categoria");
+            model.addColumn("Proveedor");
             model.addColumn("Estado");
 
-            while (rs.next()) {
-                Object fila[] = new Object[7];
-                for (int i = 0; i < 7; i++) {
+             while (rs.next()) {
+                Object fila[] = new Object[10];
+                for (int i = 0; i < 10; i++) {
                     fila[i] = rs.getObject(i + 1);
                 }
                 model.addRow(fila);
             }
             con.close();
         } catch (SQLException e) {
-            System.out.println("Error al llenar la tabla usuarios: " + e);
+            System.out.println("Error al llenar la tabla productos: " + e);
         }
         //evento para obtener campo al cual el usuario da click
         //y obtener la interfaz que mostrara la informacion general
-        jTable_usuarios.addMouseListener(new MouseAdapter() {
+        jTable_productos.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int fila_point = jTable_usuarios.rowAtPoint(e.getPoint());
+                int fila_point = jTable_productos.rowAtPoint(e.getPoint());
                 int columna_point = 0;
 
                 if (fila_point > -1) {
-                    idUsuario = (int) model.getValueAt(fila_point, columna_point);
-                    EnviarDatosUsuarioSeleccionado(idUsuario);//metodo
+                    idProducto = (int) model.getValueAt(fila_point, columna_point);
+                    EnviarDatosProductoSeleccionado(idProducto);//metodo
                 }
             }
         });
     }
+    
+    /*
+     * *****************************************************
+     * metodo para mostrar todos los clientes registrados
+     * *****************************************************
+     */
 
 
     /*
@@ -94,25 +152,99 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
      * Metodo que envia datos seleccionados
      * **************************************************
      */
-    private void EnviarDatosUsuarioSeleccionado(int idUsuario) {
+    private void EnviarDatosProductoSeleccionado(int idProducto) {
         try {
             Connection con = Conexion.conectar();
             PreparedStatement pst = con.prepareStatement(
-                    "select * from tb_usuario where idUsuario = '" + idUsuario + "'");
+                    "select * from tb_producto where idProducto = '" + idProducto + "'");
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {
-                txt_nombre.setText(rs.getString("Nombre"));
-                txt_apellido.setText(rs.getString("Apellido"));
-                txt_usuario.setText(rs.getString("Usuario"));
-                txt_password.setText(rs.getString("Password"));
+                txt_codigo.setText(rs.getString("codigo"));
+                txt_descripcion.setText(rs.getString("nombre"));
+                txt_cantidad.setText(rs.getString("cantidad"));
+                txt_precio.setText(rs.getString("precio"));
+                txt_precioventa.setText(rs.getString("precioVenta"));
+                txt_porcentajeiva.setText(rs.getString("porcentajeIva"));
+                int idCate = rs.getInt("idCategoria");
+                jComboBox_categoria.setSelectedItem(relacionarCategoria(idCate));
+                int idProv = rs.getInt("idProveedor");
+                jComboBox_proveedor.setSelectedItem(relacionarProveedor(idProv));
             }
             con.close();
         } catch (SQLException e) {
-            System.out.println("Error al seleccionar usuario: " + e);
+            System.out.println("Error al seleccionar producto: " + e);
         }
     }
-
     
+        private String relacionarCategoria(int idCategoria) {
+
+        String sql = "select descripcion from tb_categoria where idCategoria = '" + idCategoria + "'";
+        Statement st;
+        try {
+            Connection cn = Conexion.conectar();
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                descripcionCategoria = rs.getString("descripcion");
+            }
+            cn.close();
+
+        } catch (SQLException e) {
+            System.out.println("¡Error al obtener el id de la categoria!");
+        }
+        return descripcionCategoria;
+    }
+        
+        private String relacionarProveedor(int idProveedor) {
+
+        String sql = "select nombre from tb_proveedor where idProveedor = '" + idProveedor + "'";
+        Statement st;
+        try {
+            Connection cn = Conexion.conectar();
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                nombreProveedor = rs.getString("nombre");
+            }
+            cn.close();
+
+        } catch (SQLException e) {
+            System.out.println("¡Error al obtener el id del proveedor!");
+        }
+        return nombreProveedor;
+    }
+        
+        private int IdCategoria() {
+        String sql = "select * from tb_categoria where descripcion = '" + this.jComboBox_categoria.getSelectedItem() + "'";
+        Statement st;
+        try {
+            Connection cn = Conexion.conectar();
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                obtenerIdCategoriaCombo = rs.getInt("idCategoria");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al obener id categoria");
+        }
+        return obtenerIdCategoriaCombo;
+    }
+
+        private int IdProveedor() {
+        String sql = "select * from tb_proveedor where nombre = '" + this.jComboBox_proveedor.getSelectedItem() + "'";
+        Statement st;
+        try {
+            Connection cn = Conexion.conectar();
+            st = cn.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            while (rs.next()) {
+                obtenerIdProveedorCombo = rs.getInt("idProveedor");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al obener id proveedor");
+        }
+        return obtenerIdProveedorCombo;
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -126,25 +258,32 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
         jLabel1 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable_usuarios = new javax.swing.JTable();
+        jTable_productos = new javax.swing.JTable();
         jPanel3 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        txt_nombre = new javax.swing.JTextField();
-        txt_apellido = new javax.swing.JTextField();
-        txt_usuario = new javax.swing.JTextField();
-        txt_password = new javax.swing.JTextField();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        txt_codigo = new javax.swing.JTextField();
+        txt_descripcion = new javax.swing.JTextField();
+        txt_precio = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        jComboBox_categoria = new javax.swing.JComboBox<>();
+        txt_porcentajeiva = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        jComboBox_proveedor = new javax.swing.JComboBox<>();
+        txt_precioventa = new javax.swing.JTextField();
+        txt_cantidad = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jButton_actualizar = new javax.swing.JButton();
         jButton_eliminar = new javax.swing.JButton();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
         jLabel_wallpaper = new javax.swing.JLabel();
 
+        setClosable(true);
         setIconifiable(true);
         setResizable(true);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -158,7 +297,7 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jTable_usuarios.setModel(new javax.swing.table.DefaultTableModel(
+        jTable_productos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -169,66 +308,79 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(jTable_usuarios);
+        jScrollPane1.setViewportView(jTable_productos);
 
-        jPanel2.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 710, 250));
+        jPanel2.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 740, 250));
 
-        getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 730, 270));
+        getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 760, 270));
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
         jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel3.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLabel3.setText("Nombre:");
-        jPanel3.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 20, -1, -1));
+        jPanel3.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, -1, -1));
 
         jLabel4.setText("Cantidad:");
-        jPanel3.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 65, -1, -1));
+        jPanel3.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 20, -1, -1));
 
-        jLabel5.setText("Precio:");
-        jPanel3.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 20, -1, -1));
+        jLabel5.setText("Precio de compra:");
+        jPanel3.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 20, -1, -1));
 
-        jLabel6.setText("Descripción:");
-        jPanel3.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 65, -1, -1));
+        jLabel6.setText("Precio de venta:");
+        jPanel3.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 60, -1, -1));
 
         jLabel7.setText("IVA:");
-        jPanel3.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(640, 20, -1, -1));
+        jPanel3.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 60, -1, -1));
 
-        txt_nombre.addActionListener(new java.awt.event.ActionListener() {
+        txt_codigo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txt_nombreActionPerformed(evt);
+                txt_codigoActionPerformed(evt);
             }
         });
-        jPanel3.add(txt_nombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 15, 170, -1));
-        jPanel3.add(txt_apellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 60, 170, -1));
+        jPanel3.add(txt_codigo, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 20, 170, -1));
+        jPanel3.add(txt_descripcion, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 60, 170, -1));
 
-        txt_usuario.addActionListener(new java.awt.event.ActionListener() {
+        txt_precio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txt_usuarioActionPerformed(evt);
+                txt_precioActionPerformed(evt);
             }
         });
-        jPanel3.add(txt_usuario, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 15, 170, -1));
-
-        txt_password.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txt_passwordActionPerformed(evt);
+        txt_precio.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txt_precioKeyReleased(evt);
             }
         });
-        jPanel3.add(txt_password, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 60, 170, -1));
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccione IVA:", " " }));
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
-            }
-        });
-        jPanel3.add(jComboBox1, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 20, -1, -1));
+        jPanel3.add(txt_precio, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 20, 80, -1));
 
         jLabel2.setText("Proveedor:");
-        jPanel3.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(640, 60, -1, -1));
+        jPanel3.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 20, -1, -1));
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccione categoría:" }));
-        jPanel3.add(jComboBox2, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 60, -1, -1));
+        jComboBox_categoria.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccione una categoría:" }));
+        jPanel3.add(jComboBox_categoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 60, -1, -1));
+
+        txt_porcentajeiva.setEditable(false);
+        jPanel3.add(txt_porcentajeiva, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 60, 70, -1));
+
+        jLabel8.setText("Categoría:");
+        jPanel3.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 60, -1, -1));
+
+        jComboBox_proveedor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccione un proveedor:", "Item 2", "Item 3", "Item 4" }));
+        jPanel3.add(jComboBox_proveedor, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 20, 170, -1));
+
+        txt_precioventa.setEditable(false);
+        jPanel3.add(txt_precioventa, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 60, 80, -1));
+
+        txt_cantidad.setEditable(false);
+        txt_cantidad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_cantidadActionPerformed(evt);
+            }
+        });
+        jPanel3.add(txt_cantidad, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 20, 70, -1));
+
+        jLabel9.setText("Código:");
+        jPanel3.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 20, -1, -1));
 
         getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 330, 870, 100));
 
@@ -244,7 +396,7 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
                 jButton_actualizarActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton_actualizar, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 20, -1, -1));
+        jPanel1.add(jButton_actualizar, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 20, -1, -1));
 
         jButton_eliminar.setBackground(new java.awt.Color(255, 153, 153));
         jButton_eliminar.setText("Eliminar");
@@ -253,9 +405,13 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
                 jButton_eliminarActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton_eliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 60, 80, -1));
+        jPanel1.add(jButton_eliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, 80, -1));
+        jPanel1.add(jTextField1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 100, -1, -1));
 
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(750, 50, 130, 270));
+        jLabel10.setText("Buscar:");
+        jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 130, -1, -1));
+
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(780, 50, 100, 270));
 
         jLabel_wallpaper.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/fondo41.png"))); // NOI18N
         getContentPane().add(jLabel_wallpaper, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 890, 470));
@@ -264,79 +420,138 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton_actualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_actualizarActionPerformed
-        Usuario usuario = new Usuario();
-        Ctrl_Usuario controlUsuario = new Ctrl_Usuario();
+        Producto producto = new Producto();
+        Ctrl_Producto controlProducto = new Ctrl_Producto();
+        String iva = "";
+        String categoria = "";
+        String proveedor = "";
+        categoria = jComboBox_categoria.getSelectedItem().toString().trim();
+        proveedor = jComboBox_proveedor.getSelectedItem().toString().trim();
 
-        if (idUsuario == 0) {
-            JOptionPane.showMessageDialog(null, "¡Seleccione un Usuario!");
+        //validar campos
+        if (txt_descripcion.getText().equals("")|| txt_codigo.getText().equals("") || txt_cantidad.getText().equals("") || txt_precio.getText().equals("")|| txt_precioventa.getText().equals("")) {
+            JOptionPane.showMessageDialog(null, "Complete todos los campos");
         } else {
-            if (txt_nombre.getText().isEmpty() || txt_apellido.getText().isEmpty() || txt_usuario.getText().isEmpty()
-                    || txt_password.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(null, "¡Completa todos los campos!");
+                if (categoria.equalsIgnoreCase("Seleccione categoria:")) {
+                    JOptionPane.showMessageDialog(null, "Seleccione categoria");
+                } else {
+                    try {
+                            producto.setCodigo(txt_codigo.getText().trim());
+                            producto.setNombre(txt_descripcion.getText().trim());
+                            producto.setCantidad(Integer.parseInt(txt_cantidad.getText().trim()));
+                            
+                            String precioTXT = "";
+                            double Precio = 0.0;
+                            precioTXT = txt_precio.getText().trim();
+                            boolean aux = false;
+                            /*
+                            *Si el usuario ingresa , (coma) como punto decimal,
+                            lo transformamos a punto (.)
+                             */
+                            for (int i = 0; i < precioTXT.length(); i++) {
+                                if (precioTXT.charAt(i) == ',') {
+                                    String precioNuevo = precioTXT.replace(",", ".");
+                                    Precio = Double.parseDouble(precioNuevo);
+                                    aux = true;
+                                }
+                            }
+                            //evaluar la condicion
+                            if (aux == true) {
+                                producto.setPrecio(Precio);
+                            } else {
+                                Precio = Double.parseDouble(precioTXT);
+                                producto.setPrecio(Precio);
+                            }
+                            producto.setPrecioVenta(Double.parseDouble(txt_precioventa.getText().trim()));
+                            //Porcentaje IVA
+                            producto.setPorcentajeIva(Integer.parseInt(txt_porcentajeiva.getText().trim()));
+                            //idcategoria - cargar metodo que obtiene el id de categoria
+                            this.IdCategoria();
+                            producto.setIdCategoria(obtenerIdCategoriaCombo);
+                            
+                            this.IdProveedor();
+                            producto.setIdProveedor(obtenerIdProveedorCombo);
+                            
+                            producto.setEstado(1);
 
-            } else {
-                usuario.setNombre(txt_nombre.getText().trim());
-                usuario.setApellido(txt_apellido.getText().trim());
-                usuario.setUsuario(txt_usuario.getText().trim());
-                usuario.setPassword(txt_password.getText().trim());
-                usuario.setEstado(1);
-                
-                if(controlUsuario.actualizar(usuario, idUsuario)){
-                    JOptionPane.showMessageDialog(null, "¡Actualizacion Exitosa!");
-                    this.Limpiar();
-                    this.CargarTablaUsuarios();
-                    idUsuario = 0;
-                    
-                }else{
-                    JOptionPane.showMessageDialog(null, "¡Error al Actualizar usuario!");
+                        if (controlProducto.actualizar(producto, idProducto)) {
+                            JOptionPane.showMessageDialog(null, "Registro Actualizado");
+                            this.CargarComboCategoria();
+                            this.CargarComboProveedor();
+                            this.CargarTablaProductos();
+                            this.Limpiar();
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Error al Actualizar");
+                        }
+                    } catch (HeadlessException | NumberFormatException e) {
+                        System.out.println("Error en: " + e);
+                    }
                 }
-            }
-        } 
+            
+        }
     }//GEN-LAST:event_jButton_actualizarActionPerformed
 
-    private void txt_nombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_nombreActionPerformed
+    private void txt_codigoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_codigoActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txt_nombreActionPerformed
+    }//GEN-LAST:event_txt_codigoActionPerformed
 
-    private void txt_usuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_usuarioActionPerformed
+    private void txt_precioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_precioActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txt_usuarioActionPerformed
-
-    private void txt_passwordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_passwordActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txt_passwordActionPerformed
+    }//GEN-LAST:event_txt_precioActionPerformed
 
     private void jButton_eliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_eliminarActionPerformed
-        // TODO add your handling code here:
+        Ctrl_Producto controlProducto = new Ctrl_Producto();
+        if (idProducto == 0) {
+            JOptionPane.showMessageDialog(null, "¡Seleccione un Producto!");
+        } else {
+            if (!controlProducto.eliminar(idProducto)) {
+                JOptionPane.showMessageDialog(null, "¡Producto Eliminado!");
+                this.CargarTablaProductos();
+                this.CargarComboCategoria();
+                this.Limpiar();
+            } else {
+                JOptionPane.showMessageDialog(null, "¡Error al eliminar producto!");
+            }
+        }
     }//GEN-LAST:event_jButton_eliminarActionPerformed
 
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+    private void txt_cantidadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_cantidadActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jComboBox1ActionPerformed
+    }//GEN-LAST:event_txt_cantidadActionPerformed
+
+    private void txt_precioKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_precioKeyReleased
+    calcularPrecioGananciaYVenta();        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_precioKeyReleased
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton_actualizar;
     private javax.swing.JButton jButton_eliminar;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JComboBox<String> jComboBox_categoria;
+    private javax.swing.JComboBox<String> jComboBox_proveedor;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JLabel jLabel_wallpaper;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     public static javax.swing.JScrollPane jScrollPane1;
-    public static javax.swing.JTable jTable_usuarios;
-    private javax.swing.JTextField txt_apellido;
-    private javax.swing.JTextField txt_nombre;
-    private javax.swing.JTextField txt_password;
-    private javax.swing.JTextField txt_usuario;
+    public static javax.swing.JTable jTable_productos;
+    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField txt_cantidad;
+    private javax.swing.JTextField txt_codigo;
+    private javax.swing.JTextField txt_descripcion;
+    private javax.swing.JTextField txt_porcentajeiva;
+    private javax.swing.JTextField txt_precio;
+    private javax.swing.JTextField txt_precioventa;
     // End of variables declaration//GEN-END:variables
 
     /*
@@ -345,12 +560,40 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
      * *****************************************************
      */
     private void Limpiar() {
-        txt_nombre.setText("");
-        txt_password.setText("");
-        txt_apellido.setText("");
-        txt_usuario.setText("");
+        txt_descripcion.setText("");
+        txt_cantidad.setText("");
+        txt_precio.setText("");
+        txt_codigo.setText("");
+        txt_precioventa.setText("");
+        txt_porcentajeiva.setText("");
     }
+    
+    
+    public void calcularPrecioGananciaYVenta() {
+    String precioCompraTexto = txt_precio.getText().trim(); // Obtener el texto del campo precio y eliminar espacios en blanco al inicio y al final
+    
+    // Verificar si el campo de precio está en blanco
+    if (precioCompraTexto.isEmpty()) {
+        // Si está en blanco, borrar la información de los campos de precio ganancia y precio venta
+        txt_precioventa.setText("");
+        return; // Salir del método ya que no hay nada más que hacer
+    }
+    
+    try {
+        double preciocompra = Double.parseDouble(precioCompraTexto);
+        double precioventa = calcularPrecioVenta(preciocompra);
+        
+        txt_precioventa.setText(String.valueOf(precioventa));  
+    } catch (NumberFormatException e) {
+        // Manejar la excepción si el valor en txt_precio no es un número válido
+        // Aquí puedes mostrar un mensaje de error o realizar otra acción apropiada
+        System.out.println("Ingrese un número válido en el campo de precio.");
+    }
+}
 
+public double calcularPrecioVenta(double preciocompra) {
+    return (preciocompra * 0.435) + preciocompra;
+}
  }
 
 
